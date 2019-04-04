@@ -1,13 +1,19 @@
 package com.lambdaschool.serviceimagedownloader;
 
 import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -80,6 +86,9 @@ public class FullscreenActivity extends AppCompatActivity {
             if (AUTO_HIDE) {
                 delayedHide(AUTO_HIDE_DELAY_MILLIS);
             }
+            // S03M04-4 Start service
+            Intent serviceIntent = new Intent(view.getContext(), LargeImageDownloadService.class);
+            startService(serviceIntent);
             return false;
         }
     };
@@ -90,13 +99,25 @@ public class FullscreenActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_fullscreen);
 
-        // S03M04-4 Start service
-        Intent serviceIntent = new Intent(this, LargeImageDownloadService.class);
-        startService(serviceIntent);
-
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
+
+        final BroadcastReceiver imageDownloadedReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if(action.equals(LargeImageDownloadService.FILE_DOWNLOADED_ACTION)) {
+                    Bitmap image = intent.getParcelableExtra(LargeImageDownloadService.DOWNLOADED_IMAGE);
+                    ((ImageView)findViewById(R.id.fullscreen_content)).setImageBitmap(image);
+                }
+            }
+        };
+
+        final IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(LargeImageDownloadService.FILE_DOWNLOADED_ACTION);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(imageDownloadedReceiver, intentFilter);
 
 
         // Set up the user interaction to manually show or hide the system UI.

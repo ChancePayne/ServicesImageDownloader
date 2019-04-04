@@ -6,15 +6,46 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 // S03M04-1 create new service
 public class LargeImageDownloadService extends Service {
+
+    public static final String FILE_DOWNLOADED_ACTION = "com.lambdaschool.serviceimagedownloader.FILE_DOWNLOADED";
+    public static final String DOWNLOADED_IMAGE = "downloaded_image";
+
+    private static final String TAG = "LargeImageDownloadServi";
+
     public LargeImageDownloadService() {
+        Log.i(TAG, "in constructor");
+    }
+
+    /**
+     * Called by the system when the service is first created.  Do not call this method directly.
+     */
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.i(TAG, "in onCreate");
+    }
+
+    /**
+     * Called by the system to notify a Service that it is no longer used and is being removed.  The
+     * service should clean up any resources it holds (threads, registered
+     * receivers, etc) at this point.  Upon return, there will be no more calls
+     * in to this Service object and it is effectively dead.  Do not call this method directly.
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "in onDestroy");
     }
 
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
+        Log.i(TAG, "in onBind");
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
@@ -48,12 +79,19 @@ public class LargeImageDownloadService extends Service {
      * @see #stopSelfResult(int)
      */
     @Override // S03M04-2 Override this method
-    public int onStartCommand(Intent intent, int flags, int startId) {
+    public int onStartCommand(final Intent intent, int flags, int startId) {
+        final Context context = this;
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // S03M04-3 Add network call
                 final Bitmap bitmap = NetworkAdapter.getBitmapFromUrl("https://www.photolib.noaa.gov/bigs/amer0006.jpg");
+
+                Intent imageBroadcast = new Intent(FILE_DOWNLOADED_ACTION);
+                imageBroadcast.putExtra(DOWNLOADED_IMAGE, bitmap);
+                LocalBroadcastManager.getInstance(context).sendBroadcast(imageBroadcast);
+
+                stopSelf();
             }
         }).start();
 
