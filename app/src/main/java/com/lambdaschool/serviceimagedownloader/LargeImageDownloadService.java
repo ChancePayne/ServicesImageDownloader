@@ -3,6 +3,7 @@ package com.lambdaschool.serviceimagedownloader;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.IBinder;
 
@@ -48,6 +49,14 @@ public class LargeImageDownloadService extends Service {
      */
     @Override // S03M04-2 Override this method
     public int onStartCommand(Intent intent, int flags, int startId) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // S03M04-3 Add network call
+                final Bitmap bitmap = NetworkAdapter.getBitmapFromUrl("https://www.photolib.noaa.gov/bigs/amer0006.jpg");
+            }
+        }).start();
+
         return super.onStartCommand(intent, flags, startId);
     }
 }

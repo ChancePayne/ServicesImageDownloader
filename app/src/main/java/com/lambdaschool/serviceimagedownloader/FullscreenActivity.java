@@ -1,6 +1,7 @@
 package com.lambdaschool.serviceimagedownloader;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -88,6 +89,10 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_fullscreen);
+
+        // S03M04-4 Start service
+        Intent serviceIntent = new Intent(this, LargeImageDownloadService.class);
+        startService(serviceIntent);
 
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
